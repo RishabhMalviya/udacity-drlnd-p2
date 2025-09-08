@@ -8,7 +8,7 @@ import torch.optim as optim
 from model import Actor, Critic
 
 
-GAMMA = 1.00
+GAMMA = 0.9
 LR_ACTOR = 1e-3
 LR_CRITIC = 1e-4
 
@@ -32,6 +32,7 @@ class Agent():
         self.GAMMA = GAMMA
         self.LR_ACTOR = LR_ACTOR
         # self.LR_CRITIC = LR_CRITIC
+        self.BASELINE_REWARD = 0.05
 
         self.state_size = state_size
         self.action_size = action_size
@@ -44,10 +45,6 @@ class Agent():
         # # Critic Network
         # self.critic_nn = Critic(self.state_size, self.action_size).to(device)
         # self.critic_optimizer = optim.Adam(self.critic_nn.parameters(), lr=self.LR_CRITIC)
-
-        # Episode Variables
-        self.rewards = []
-        self.log_probs = []
 
     def reset(self):
         self.rewards = []
@@ -65,22 +62,17 @@ class Agent():
         """
         Update policy and value netowrk parameters at the end of the episode.
         """
+        print("Yes, it's entering the learning function")
         # Compute the discounted returns
-        self.rewards = (np.array(self.rewards))
-        self.rewards = (self.rewards - self.rewards.mean()) / (self.rewards.std() + 1e-5)
-        discounts = np.array([self.GAMMA**i for i in range(len(self.rewards))])
-
-        returns = \
-            (self.rewards*discounts).sum() \
-                + \
-            [
-                sum([a*b for a,b in zip(self.rewards[i:],discounts[:-i])])
-                for i in range(1,len(self.rewards))
-            ]
+        self.rewards = np.array(self.rewards)
+        discounts = np.array([self.GAMMA**i for i in range(len(self.rewards))] + [0.0]) # Extra 0.0 for indexing convenience
+        returns = np.array([
+            sum(self.rewards[i-1:]*discounts[:-i]) - sum(discounts[:-i])*self.BASELINE_REWARD
+            for i in range(1, len(self.rewards)+1)
+        ])
 
         # Compute the Policy Gradient
-        actor_policy_loss = torch.stack([ -log_probs * returns for log_probs, returns in zip(self.log_probs, returns) ]).sum()
-        
+        actor_policy_loss = torch.stack([ -log_probs * returns for log_probs, returns in zip(self.log_probs, returns) ]).sum()        
         self.actor_optimizer.zero_grad()
         actor_policy_loss.backward()
         self.actor_optimizer.step()
