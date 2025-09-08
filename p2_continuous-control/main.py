@@ -20,3 +20,7 @@ def run():
             env    = UnityEnvironment(file_name='./Reacher_Linux/Reacher.x86_64'),
             agent  = Agent(state_size=37, action_size=4, seed=0)
         )
+
+
+if __name__ == '__main__':
+    run()

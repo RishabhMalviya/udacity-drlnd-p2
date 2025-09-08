@@ -56,7 +56,7 @@ def train_agent(
             # Reset the agent
             agent.reset()
 
-            # Run the episode
+            # Collect the episode
             score = 0            
             for t in range(max_t):
                 action = agent.act(state)
@@ -69,13 +69,16 @@ def train_agent(
                 score += reward
 
                 if done:
-                    agent.learn()
                     break
+            
+            # Learn from the episode
+            agent.learn()
 
+            # Update scores tracking
             scores_window.append(score)
             scores.append(score)
 
-            print(f'\rEpisode {i_episode}\t Score: {score:.2f}', end="",flush=True)
+            print(f'\rEpisode {i_episode}\t Score: {score:.2f}', end="", flush=True)
             if _check_solved(i_episode, scores_window):
                 agent.save(save_location)
                 solved = True
