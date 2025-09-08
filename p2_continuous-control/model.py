@@ -23,8 +23,8 @@ class Actor(nn.Module):
     def forward(self, x):
         x = F.relu(self.fc1(x))
 
-        means = F.tanh(self.fc_means(x))
-        log_variances = F.relu(self.fc_log_variances(x))
+        means = self.fc_means(x)
+        log_variances = self.fc_log_variances(x)
 
         stds = (0.5 * log_variances).exp()
         dist = Normal(means, stds)

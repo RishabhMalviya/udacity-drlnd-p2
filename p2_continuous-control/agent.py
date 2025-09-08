@@ -9,7 +9,7 @@ from model import Actor, Critic
 
 
 GAMMA = 0.9
-LR_ACTOR = 1e-3
+LR_ACTOR = 1e-4
 LR_CRITIC = 1e-4
 
 
@@ -62,7 +62,6 @@ class Agent():
         """
         Update policy and value netowrk parameters at the end of the episode.
         """
-        print("Yes, it's entering the learning function")
         # Compute the discounted returns
         self.rewards = np.array(self.rewards)
         discounts = np.array([self.GAMMA**i for i in range(len(self.rewards))] + [0.0]) # Extra 0.0 for indexing convenience
@@ -72,10 +71,10 @@ class Agent():
         ])
 
         # Compute the Policy Gradient
-        actor_policy_loss = torch.stack([ -log_probs * returns for log_probs, returns in zip(self.log_probs, returns) ]).sum()        
-        self.actor_optimizer.zero_grad()
+        actor_policy_loss = torch.cat([ -log_probs * returns for log_probs, returns in zip(self.log_probs, returns) ]).sum()        
         actor_policy_loss.backward()
         self.actor_optimizer.step()
+        self.actor_optimizer.zero_grad()
 
         # Reset episode variables
         self.reset()
