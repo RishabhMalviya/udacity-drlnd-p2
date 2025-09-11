@@ -26,6 +26,11 @@ def plot_scores(scores, save_filename='scores.png'):
     plt.savefig(save_filename)
 
 
+def inspect_weights(model):
+    for name, param in model.named_parameters():
+        print(f"{name}:\t{np.abs(param.detach().cpu().numpy()).mean():.2f}")
+
+
 def train_agent(
     env,
     agent,
@@ -49,6 +54,13 @@ def train_agent(
     
     try:
         for i_episode in range(1, n_episodes+1):
+            # print()
+            # print()
+            # print(f'Actor weights at the beginning of episode {i_episode}:')
+            # inspect_weights(agent.actor_nn)
+            # print(f'Critic weights at the beginning of episode {i_episode}:')
+            # inspect_weights(agent.critic_nn)
+
             # Reset the environment
             env_info = env.reset(train_mode=True)[brain_name]
             state = env_info.vector_observations[0]

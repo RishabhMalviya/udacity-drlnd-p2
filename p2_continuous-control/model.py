@@ -4,29 +4,24 @@ import torch.nn.functional as F
 from torch.distributions import Normal
 
 
-torch.manual_seed(0)
-
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-
 class Actor(nn.Module):
-    def __init__(self, s_size=33, a_size=4, h_size=None):
+    def __init__(self, s_size=33, a_size=4):
         super(Actor, self).__init__()
 
-        if not h_size:
-            h_size = 256
-
-        self.fc1 = nn.Linear(s_size, h_size)
-        self.fc_means = nn.Linear(h_size, a_size)
-        self.fc_log_variances = nn.Linear(h_size, a_size)
+        self.fc1 = nn.Linear(s_size, 256)
+        self.fc2 = nn.Linear(256, 128)
+        self.fc_means = nn.Linear(128, a_size)
+        self.fc_log_variances = nn.Linear(128, a_size)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
 
         means = self.fc_means(x)
-        log_variances = self.fc_log_variances(x)
 
+        log_variances = self.fc_log_variances(x)
         stds = (0.5 * log_variances).exp()
+
         dist = Normal(means, stds)
         actions = dist.rsample()
 
@@ -34,21 +29,16 @@ class Actor(nn.Module):
 
 
 class Critic(nn.Module):
-    def __init__(self, s_size=33, a_size=4, h_size=None):
+    def __init__(self, s_size=33):
         super(Critic, self).__init__()
 
-        if not h_size:
-            h_size = 256
+        self.fc1 = nn.Linear(s_size, 256)
+        self.fc2 = nn.Linear(256, 128)
+        self.fc3 = nn.Linear(128, 1)
 
-        self.fcs1 = nn.Linear(s_size, h_size)
-        self.fc2 = nn.Linear(h_size + a_size, h_size // 2)
-        self.fc3 = nn.Linear(h_size // 2, 1)
-
-    def forward(self, state, action):
-        x_s = F.relu(self.fcs1(state))
-        x = torch.cat((x_s, action), dim=-1)
-        
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = F.leaky_relu(self.fc3(x))
 
         return x

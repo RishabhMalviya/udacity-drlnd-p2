@@ -9,11 +9,13 @@ from model import Actor, Critic
 
 
 GAMMA = 0.9
-LR_ACTOR = 1e-4
+LR_ACTOR = 5e-4
 LR_CRITIC = 1e-4
+ALPHA = 0.1
 
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+torch.manual_seed(0)
+device = "cpu" # torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 class Agent():
@@ -29,9 +31,6 @@ class Agent():
             seed (int): random seed
         """
         # Hyperparameters
-        self.GAMMA = GAMMA
-        self.LR_ACTOR = LR_ACTOR
-        # self.LR_CRITIC = LR_CRITIC
         self.BASELINE_REWARD = 0.05
 
         self.state_size = state_size
@@ -40,41 +39,56 @@ class Agent():
 
         # Actor Network
         self.actor_nn = Actor(self.state_size, self.action_size).to(device)
-        self.actor_optimizer = optim.Adam(self.actor_nn.parameters(), lr=self.LR_ACTOR)
+        self.actor_optimizer = optim.Adam(self.actor_nn.parameters(), lr=LR_ACTOR)
 
-        # # Critic Network
-        # self.critic_nn = Critic(self.state_size, self.action_size).to(device)
-        # self.critic_optimizer = optim.Adam(self.critic_nn.parameters(), lr=self.LR_CRITIC)
+        # Critic Network
+        self.critic_nn = Critic(self.state_size).to(device)
+        self.critic_optimizer = optim.Adam(self.critic_nn.parameters(), lr=LR_CRITIC)
+        self.critic_loss = torch.nn.MSELoss()
 
     def reset(self):
         self.rewards = []
         self.log_probs = []
+        self.state_value_estimates = []
 
     def act(self, state):
         state = torch.from_numpy(state).float().unsqueeze(0).to(device)
+
         actions, log_prob = self.actor_nn.forward(state)
-        
         self.log_probs.append(log_prob)
+
+        self.state_value_estimates.append(self.critic_nn.forward(state))
         
         return actions.detach().cpu().numpy()[0]
 
     def learn(self):
         """
-        Update policy and value netowrk parameters at the end of the episode.
+        Update policy and value network parameters at the end of the episode.
         """
         # Compute the discounted returns
         self.rewards = np.array(self.rewards)
-        discounts = np.array([self.GAMMA**i for i in range(len(self.rewards))] + [0.0]) # Extra 0.0 for indexing convenience
+        discounts = np.array([GAMMA**i for i in range(len(self.rewards))] + [0.0]) # Extra 0.0 for indexing convenience
         returns = np.array([
-            sum(self.rewards[i-1:]*discounts[:-i]) - sum(discounts[:-i])*self.BASELINE_REWARD
+            sum(self.rewards[i-1:]*discounts[:-i])
             for i in range(1, len(self.rewards)+1)
         ])
 
-        # Compute the Policy Gradient
-        actor_policy_loss = torch.cat([ -log_probs * returns for log_probs, returns in zip(self.log_probs, returns) ]).sum()        
-        actor_policy_loss.backward()
-        self.actor_optimizer.step()
+        # Update Critic
+        critic_loss = self.critic_loss(
+            torch.cat(self.state_value_estimates).squeeze(),
+            torch.tensor(returns, dtype=torch.float32).to(device)
+        )
+        self.critic_optimizer.zero_grad()
+        critic_loss.backward()
+        self.critic_optimizer.step()
+
+        # Update Actor
+        returns = returns - np.array([v.item() for v in self.state_value_estimates])
+        actor_loss = torch.cat([ -log_probs * ret for log_probs, ret in zip(self.log_probs, returns) ]).mean()
         self.actor_optimizer.zero_grad()
+        actor_loss.backward()
+        self.actor_optimizer.step()
+
 
         # Reset episode variables
         self.reset()
