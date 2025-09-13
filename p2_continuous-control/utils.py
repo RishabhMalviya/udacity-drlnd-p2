@@ -35,12 +35,12 @@ class ScoreKeeper:
     def _check_solved(self, i_episode):
         print(f'\rEpisode {i_episode}\t Score: {self.scores[-1]:.2f}', end='', flush=True)
 
-        if i_episode >= 100 and i_episode % 10 == 0:
-            print(f'\rEpisode {i_episode}\tAverage Score (over past 100 episodes): {np.mean(self.scores_window):.2f}')
-
-        if np.mean(self.scores_window)>=self.TARGET_SCORE:
-            print(f'Environment solved in {i_episode-self.WINDOW_LEN} episodes!\tAverage Score: {np.mean(self.scores_window):.2f}')
-            return True
+        if i_episode >= self.WINDOW_LEN:
+            if i_episode % 10 == 0:
+                print(f'\rEpisode {i_episode}\tAverage Score (over past 100 episodes): {np.mean(self.scores_window):.2f}')
+            if np.mean(self.scores_window) >= self.TARGET_SCORE:
+                print(f'Environment solved in {i_episode-self.WINDOW_LEN} episodes!\tAverage Score: {np.mean(self.scores_window):.2f}')
+                return True
 
         return False
     
