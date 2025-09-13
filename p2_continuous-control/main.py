@@ -93,27 +93,35 @@ def watch_agent(
     agent = Agent()
     agent.load_networks()
 
-    for _ in tqdm(range(1, N_EPISODES+1)):
-        env_info = env.reset(train_mode=False)[brain_name]
-        state = env_info.vector_observations
+    try:
+        for _ in tqdm(range(1, N_EPISODES+1)):
+            env_info = env.reset(train_mode=False)[brain_name]
+            state = env_info.vector_observations
 
-        for _ in range(MAX_T):
-            env_info = env.step(agent.act(state))[brain_name]
+            for _ in range(MAX_T):
+                env_info = env.step(agent.act(state))[brain_name]
 
-            next_state = env_info.vector_observations
-            state = next_state
+                next_state = env_info.vector_observations
+                state = next_state
 
-            done = env_info.local_done
-            if np.any(done):
-                break
-
-    env.close()
+                done = env_info.local_done
+                if np.any(done):
+                    break
+    finally:
+        env.close()
 
 
 if __name__ == '__main__':
-    solved, scores = train_agent(n_episodes=300)
+    solved, scores = train_agent(
+        max_t=1000,
+        n_episodes=2000,
+        checkpoint_every=100
+    )
     
     plot_scores(scores)
     
     if solved:
-        watch_agent(n_episodes=5)
+        watch_agent(
+            max_t=250,
+            n_episodes=1
+        )
