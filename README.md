@@ -64,7 +64,7 @@ To train the agent, make sure the `conda` environment is activated (if it isn't,
 1. Navigate into the `p1_navigation` folder with: `cd ./p2_continuous-control` 
 2. Run the training script: `python main.py`
 
-If the environment gets solved, the model weights will get saved in `p2_continuous-control/checkpoint.pth`, and you will see a simulation of the trained agent.
+If the environment gets solved, the model weights will get saved in `p2_continuous-control/checkpoint_actor.pth` and ``p2_continuous-control/checkpoint_critic.pth`, and you will see a simulation of the trained agent.
 
 ## Report
 The details of the successfully trained agent and the learning algorithm can be found in `Report.ipynb`.
