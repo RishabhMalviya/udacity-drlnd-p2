@@ -109,6 +109,12 @@ These are all the hyperparameters used.
 
 ![Score Plot][image1]
 
+# Ideas for Future Work
+
+I would like to explore:
+- [Distributed Distributional DDPG (D4PG)](https://openreview.net/pdf?id=SyZipzbCb) - because it will combine my learnings from DDPG as well as distributional NNs from VPG
+- [GAE](https://arxiv.org/pdf/1506.02438) - to see if we can improve DDPG even further by using GAE instead of the TD-Estimate during Critic training (this will be a much more difficult implementation)
+
 # References
 1. [OpenAI's Spinning Up - VPG (REINFORCE)](https://spinningup.openai.com/en/latest/algorithms/vpg.html)
 2. [Probe Environments](https://andyljones.com/posts/rl-debugging.html)
