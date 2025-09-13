@@ -28,7 +28,7 @@ This section will provide instructions on how to setup the repository code. It i
 1. Run the following commands to download and extract the Unity ML Agents environment:
 ```bash
 cd ./p2_continuous-control
-wget https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/one_agent/Reacher_Linux.zip
+wget https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/Reacher_Linux.zip
 unzip Reacher_Linux.zip
 rm Reacher_Linux.zip
 cd ..
@@ -64,7 +64,7 @@ To train the agent, make sure the `conda` environment is activated (if it isn't,
 1. Navigate into the `p1_navigation` folder with: `cd ./p2_continuous-control` 
 2. Run the training script: `python main.py`
 
-If the environment gets solved, the model weights will get saved in `p2_continuous-control/checkpoint.pth`, and you will see a simulation of the trained agent.
+If the environment gets solved, the model weights will get saved in `p2_continuous-control/checkpoint_actor.pth` and ``p2_continuous-control/checkpoint_critic.pth`, and you will see a simulation of the trained agent.
 
 ## Report
 The details of the successfully trained agent and the learning algorithm can be found in `Report.ipynb`.
