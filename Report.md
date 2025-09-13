@@ -62,33 +62,30 @@ class Actor(nn.Module):
 
 ```python
 class Critic(nn.Module):
-    def __init__(self, state_size=33, action_size=4, seed=42, fcs1_units=192, fca1_units=64, fc2_units=128):
+    def __init__(self, state_size=33, action_size=4, seed=42, fcs1_units=256, fc2_units=128):
         super(Critic, self).__init__()
 
         self.seed = torch.manual_seed(seed)
 
         self.fcs1 = nn.Linear(state_size, fcs1_units)
-        self.fca1 = nn.Linear(action_size, fca1_units)
-        self.fc2 = nn.Linear(fcs1_units + fca1_units, fc2_units)
+        self.fc2 = nn.Linear(fcs1_units+action_size, fc2_units)
         self.fc3 = nn.Linear(fc2_units, 1)
         
         self._reset_parameters()
         
     def _reset_parameters(self):
         self.fcs1.weight.data.uniform_(*hidden_init(self.fcs1))
-        self.fca1.weight.data.uniform_(*hidden_init(self.fca1))
         self.fc2.weight.data.uniform_(*hidden_init(self.fc2))
         self.fc3.weight.data.uniform_(-3e-3, 3e-3)
     
     def forward(self, state, action):
-        xs = F.relu(self.fcs1(state))
-        xa = F.relu(self.fca1(action))
-
-        x = F.relu(self.fc2(torch.cat((xs, xa), dim=1)))
+        xs = F.leaky_relu(self.fcs1(state))
+        x = torch.cat((xs, action), dim=1)
+        x = F.leaky_relu(self.fc2(x))
 
         return self.fc3(x)
 ```
-^Notice how there are two input 'heads'. One for the state, and one for the action. This allows the network to reason about each independently before combining the information from both.
+^Notice how there is a separate input 'head' for the state, and the action is taken as input only in the second layer. This allows the network to reason about the state and action independently before combining the information from both.
 
 ## Hyperparameters
 These are all the hyperparameters used.
