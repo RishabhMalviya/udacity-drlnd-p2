@@ -53,7 +53,7 @@ class Agent:
 
         self.target_actor = Actor(state_size, action_size).to(device)
         self.target_actor.load_state_dict(self.local_actor.state_dict())
-        self.target_actor.eval()  # Only updated via soft update
+        self.target_actor.eval()
 
         self.actor_optimizer = optim.Adam(self.local_actor.parameters(), lr=self.ACTOR_LR)
 
@@ -62,7 +62,7 @@ class Agent:
 
         self.target_critic = Critic(state_size, action_size).to(device)
         self.target_critic.load_state_dict(self.local_critic.state_dict())
-        self.target_critic.eval()  # Only updated via soft update
+        self.target_critic.eval()
 
         self.critic_loss_fn = nn.MSELoss()
 
@@ -126,7 +126,10 @@ class Agent:
         # Get Actions from Local Actor
         actions_estimates = self.local_actor(states)
         # Get Value Estimates from Target Critic (without updating it)
-        state_values = -self.local_critic(states, actions_estimates).mean()
+        self.local_critic.eval()
+        with torch.no_grad():
+            state_values = -self.local_critic(states, actions_estimates).mean()
+        self.local_critic.train()
         # Backpropagate and Optimize
         self.actor_optimizer.zero_grad()
         state_values.backward()
