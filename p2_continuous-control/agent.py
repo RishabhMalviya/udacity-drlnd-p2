@@ -40,13 +40,14 @@ class Agent:
         self.STATE_SIZE = state_size
         self.ACTION_SIZE = action_size
 
-        self.NOISE_SCALE = 0.1
+        self.NOISE_SCALE = 0.2
         self.TAU = 1e-3
-        self.GAMMA = 0.9
+        self.GAMMA = 0.95
         self.ACTOR_LR = 1e-4
-        self.CRITIC_LR = 1e-3
+        self.CRITIC_LR = 1e-4
 
-        self.LEARN_EVERY = 1e+2
+        self.LEARN_EVERY = 1
+        self.BATCH_SIZE = 512
 
         # Actor
         self.local_actor = Actor(state_size, action_size).to(device)
@@ -69,7 +70,7 @@ class Agent:
         self.critic_optimizer = optim.Adam(self.local_critic.parameters(), lr=self.CRITIC_LR)
 
         # Replay Memory
-        self.replay_buffer = ReplayBuffer()
+        self.replay_buffer = ReplayBuffer(batch_size=self.BATCH_SIZE)
 
         # State Variables
         self.t_step = 0
@@ -91,21 +92,20 @@ class Agent:
     def step(self, state, action, reward, next_state, done):
         self.t_step += 1
 
-        self.replay_buffer.add(state, action, reward, next_state, done)
+        for i in range(self.NUM_AGENTS):
+            self.replay_buffer.add(state[i], action[i], reward[i], next_state[i], done[i])
 
-        if (len(self.replay_buffer) > self.replay_buffer.BATCH_SIZE) and (self.t_step % self.LEARN_EVERY == 0):
-            experiences = self.replay_buffer.sample()
-            self._learn(experiences)
-
+        if (len(self.replay_buffer) > self.BATCH_SIZE) and (self.t_step % self.LEARN_EVERY == 0):
+            self._learn()
             self.t_step = 0
 
-    def _learn(self, experiences):
+    def _learn(self):
         def _soft_update(local_model, target_model):
             for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
                 target_param.data.copy_(self.TAU*local_param.data + (1.0-self.TAU)*target_param.data)
 
         # ------ Sample Experiences ------ #
-        states, actions, rewards, next_states, dones = experiences
+        states, actions, rewards, next_states, dones = self.replay_buffer.sample()
 
         # ------ Train Local Critic ------ #
         # Calculate Q-Targets
@@ -127,10 +127,9 @@ class Agent:
         actions_estimates = self.local_actor(states)
         # Get Value Estimates from Target Critic (without updating it)
         self.local_critic.eval()
-        with torch.no_grad():
-            state_values = -self.local_critic(states, actions_estimates).mean()
+        state_values = -self.local_critic(states, actions_estimates).mean()
         self.local_critic.train()
-        # Backpropagate and Optimize
+        # Backpropagate and Optimize (only local actor parameters)
         self.actor_optimizer.zero_grad()
         state_values.backward()
         self.actor_optimizer.step()

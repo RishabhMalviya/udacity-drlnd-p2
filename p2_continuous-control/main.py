@@ -45,8 +45,7 @@ def train_agent(
             next_state, reward, done = env_info.vector_observations, env_info.rewards, env_info.local_done
             
             # Update Environment and Agent
-            for i in range(NUM_AGENTS):
-                agent.step(state[i], action[i], reward[i], next_state[i], done[i])
+            agent.step(state, action, reward, next_state, done)
             state = next_state
             
             # Monitoring
