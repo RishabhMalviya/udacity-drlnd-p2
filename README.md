@@ -28,7 +28,7 @@ This section will provide instructions on how to setup the repository code. It i
 1. Run the following commands to download and extract the Unity ML Agents environment:
 ```bash
 cd ./p2_continuous-control
-wget https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/one_agent/Reacher_Linux.zip
+wget https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/Reacher_Linux.zip
 unzip Reacher_Linux.zip
 rm Reacher_Linux.zip
 cd ..

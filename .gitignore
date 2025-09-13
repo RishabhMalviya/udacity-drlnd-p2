@@ -102,3 +102,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Unity ML Agents Environment Files
+*Reacher_Linux/
