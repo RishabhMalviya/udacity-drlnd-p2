@@ -40,14 +40,14 @@ class Agent:
         self.STATE_SIZE = state_size
         self.ACTION_SIZE = action_size
 
-        self.NOISE_SCALE = 0.2
+        self.NOISE_SCALE = 0.1
         self.TAU = 1e-3
-        self.GAMMA = 0.9
+        self.GAMMA = 0.95
         self.ACTOR_LR = 1e-4
         self.CRITIC_LR = 1e-4
 
         self.LEARN_EVERY = 1
-        self.BATCH_SIZE = 2048
+        self.BATCH_SIZE = 1024
 
         # Actor
         self.local_actor = Actor(state_size, action_size).to(device)
@@ -70,7 +70,7 @@ class Agent:
         self.critic_optimizer = optim.Adam(self.local_critic.parameters(), lr=self.CRITIC_LR)
 
         # Replay Memory
-        self.replay_buffer = ReplayBuffer(batch_size=self.BATCH_SIZE)
+        self.replay_buffer = ReplayBuffer(buffer_size=1e+5, batch_size=self.BATCH_SIZE)
 
         # State Variables
         self.t_step = 0

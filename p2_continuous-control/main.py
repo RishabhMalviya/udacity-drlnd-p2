@@ -10,22 +10,25 @@ from utils import ScoreKeeper
 def train_agent(
         max_t=1000,
         n_episodes=500,
-        checkpoint_every=100
+        checkpoint_every=100, 
+        state_size=33,
+        action_size=4,
+        num_agents=20,
+        unity_env_path='./Reacher_Linux/Reacher.x86_64'
 ):
     # ------ Hyperparameters ------ #
     MAX_T = max_t
     N_EPISODES = n_episodes
     CHECKPOINT_EVERY = checkpoint_every
-    NUM_AGENTS = 20
 
     # ------ Instantiations ------ #
     # Environment
-    env = UnityEnvironment(file_name='./Reacher_Linux/Reacher.x86_64', no_graphics=True)
+    env = UnityEnvironment(file_name=unity_env_path, no_graphics=True)
     brain_name = env.brain_names[0]
     # Agent
-    agent = Agent()
+    agent = Agent(num_agents=num_agents, state_size=state_size, action_size=action_size)
     # Scorekeeper
-    scorekeeper = ScoreKeeper()
+    scorekeeper = ScoreKeeper(num_agents=num_agents)
     # Solved State
     solved = False
 
@@ -83,14 +86,18 @@ def plot_scores(scores, save_filename='scores.png'):
 def watch_agent(
         max_t=1000,
         n_episodes=3,
+        state_size=33,
+        action_size=4,
+        num_agents=20,
+        unity_env_path='./Reacher_Linux/Reacher.x86_64'
 ):
     MAX_T = max_t
     N_EPISODES = n_episodes
 
-    env = UnityEnvironment(file_name='./Reacher_Linux/Reacher.x86_64', no_graphics=False)
+    env = UnityEnvironment(file_name=unity_env_path, no_graphics=False)
     brain_name = env.brain_names[0]
 
-    agent = Agent()
+    agent = Agent(num_agents=num_agents, state_size=state_size, action_size=action_size)
     agent.load_networks()
 
     try:

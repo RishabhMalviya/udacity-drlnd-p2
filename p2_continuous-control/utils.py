@@ -9,7 +9,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 class ScoreKeeper:
-    def __init__(self, num_agents=20, target_score=30.0, window_len=100):
+    def __init__(self, num_agents=20, target_score=3000.0, window_len=100):
         self.NUM_AGENTS = num_agents
         self.TARGET_SCORE = target_score
         self.WINDOW_LEN = window_len
