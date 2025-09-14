@@ -42,12 +42,12 @@ class Agent:
 
         self.NOISE_SCALE = 0.2
         self.TAU = 1e-3
-        self.GAMMA = 0.95
+        self.GAMMA = 0.9
         self.ACTOR_LR = 1e-4
         self.CRITIC_LR = 1e-4
 
         self.LEARN_EVERY = 1
-        self.BATCH_SIZE = 512
+        self.BATCH_SIZE = 2048
 
         # Actor
         self.local_actor = Actor(state_size, action_size).to(device)
